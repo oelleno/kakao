@@ -1,26 +1,138 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="ko">
+
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
-  <title>카카오톡 본인인증</title>
-  <link href="style.css" rel="stylesheet" type="text/css" />
-  <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>socialLogin</title>
 </head>
+
 <body>
-  <div class="auth-container">
-    <h1>휴대폰 본인인증</h1>
-    <div class="input-group">
-      <input type="text" id="phone" placeholder="휴대폰 번호 입력 (-없이)">
-      <button onclick="sendAuthNumber()">인증번호 받기</button>
-    </div>
-    <div class="input-group">
-      <input type="text" id="authNumber" placeholder="인증번호 입력">
-      <button onclick="verifyAuthNumber()">인증확인</button>
-    </div>
-    <div id="status"></div>
-  </div>
-  <script src="script.js"></script>
+  <button id="googleLogin">구글 아이디로 로그인</button>
+
+  <form>
+    핸드폰 번호 : <input id="phoneNumber" />
+    <button id="phoneNumberButton">핸드폰 번호 전송</button>
+  </form>
+
+  <form>
+    확인 코드 : <input id="confirmCode" />
+    <button id="confrimCodeButton">확인 코드 전송</button>
+  </form>
+
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import {initializeApp} from "https://www.gstatic.com/firebasejs/9.9.2/firebase-app.js";
+    import {getAnalytics} from "https://www.gstatic.com/firebasejs/9.9.2/firebase-analytics.js";
+    import {
+      getAuth,
+      signInWithPopup,
+      GoogleAuthProvider,
+      signInWithPhoneNumber,
+      RecaptchaVerifier,
+    } from "https://www.gstatic.com/firebasejs/9.9.2/firebase-auth.js";
+
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyAxlXZTfOgO4ZrIfXp4t6sAjArTmMQrwuQ",
+      authDomain: "fitgirlviki.firebaseapp.com",
+      projectId: "fitgirlviki",
+      storageBucket: "fitgirlviki.firebasestorage.app",
+      messagingSenderId: "207468197936",
+      appId: "1:207468197936:web:70ea3baa845e40372255f5"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+
+    const provider = new GoogleAuthProvider();
+    const auth = getAuth();
+    auth.languageCode = "ko";
+
+    document.getElementById("googleLogin").addEventListener("click", () => {
+      signInWithPopup(auth, provider)
+        .then((result) => {
+          // This gives you a Google Access Token. You can use it to access the Google API.
+          const credential = GoogleAuthProvider.credentialFromResult(result);
+          const token = credential.accessToken;
+          // The signed-in user info.
+          const user = result.user;
+          console.log(result);
+          // ...
+        })
+        .catch((error) => {
+          // Handle Errors here.
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          // The email of the user's account used.
+          const email = error.customData.email;
+          // The AuthCredential type that was used.
+          const credential = GoogleAuthProvider.credentialFromError(error);
+          console.log(error);
+          // ...
+        });
+    });
+    window.recaptchaVerifier = new RecaptchaVerifier(
+      "phoneNumberButton",
+      {
+        size: "invisible",
+        callback: (response) => {
+          // reCAPTCHA solved, allow signInWithPhoneNumber.
+          onSignInSubmit();
+        },
+      },
+      auth
+    );
+
+    document
+      .getElementById("phoneNumberButton")
+      .addEventListener("click", (event) => {
+        event.preventDefault();
+
+        const phoneNumber = document.getElementById("phoneNumber").value;
+        const appVerifier = window.recaptchaVerifier;
+
+        signInWithPhoneNumber(auth, "+82" + phoneNumber, appVerifier)
+          .then((confirmationResult) => {
+            // SMS sent. Prompt user to type the code from the message, then sign the
+            // user in with confirmationResult.confirm(code).
+            window.confirmationResult = confirmationResult;
+            console.log(confirmationResult);
+            // ...
+          })
+          .catch((error) => {
+            console.log(error);
+            // Error; SMS not sent
+            // ...
+          });
+      });
+
+    document
+      .getElementById("confrimCodeButton")
+      .addEventListener("click", (event) => {
+        event.preventDefault();
+        const code = document.getElementById("confirmCode").value;
+        confirmationResult
+          .confirm(code)
+          .then((result) => {
+            // User signed in successfully.
+            const user = result.user;
+            console.log(result);
+            // ...
+          })
+          .catch((error) => {
+            console.log(error);
+            // User couldn't sign in (bad verification code?)
+            // ...
+          });
+      });
+  </script>
 </body>
+
 </html>
