@@ -18,13 +18,13 @@
 
   <form>
     확인 코드 : <input id="confirmCode" />
-    <button id="confrimCodeButton">확인 코드 전송</button>
+    <button id="confirmCodeButton">확인 코드 전송</button>
   </form>
 
   <script type="module">
     // Import the functions you need from the SDKs you need
-    import {initializeApp} from "https://www.gstatic.com/firebasejs/9.9.2/firebase-app.js";
-    import {getAnalytics} from "https://www.gstatic.com/firebasejs/9.9.2/firebase-analytics.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.9.2/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.9.2/firebase-analytics.js";
     import {
       getAuth,
       signInWithPopup,
@@ -33,11 +33,7 @@
       RecaptchaVerifier,
     } from "https://www.gstatic.com/firebasejs/9.9.2/firebase-auth.js";
 
-    // TODO: Add SDKs for Firebase products that you want to use
-    // https://firebase.google.com/docs/web/setup#available-libraries
-
     // Your web app's Firebase configuration
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
     const firebaseConfig = {
       apiKey: "AIzaSyAxlXZTfOgO4ZrIfXp4t6sAjArTmMQrwuQ",
       authDomain: "fitgirlviki.firebaseapp.com",
@@ -58,80 +54,68 @@
     document.getElementById("googleLogin").addEventListener("click", () => {
       signInWithPopup(auth, provider)
         .then((result) => {
-          // This gives you a Google Access Token. You can use it to access the Google API.
           const credential = GoogleAuthProvider.credentialFromResult(result);
           const token = credential.accessToken;
-          // The signed-in user info.
           const user = result.user;
           console.log(result);
-          // ...
         })
         .catch((error) => {
-          // Handle Errors here.
           const errorCode = error.code;
           const errorMessage = error.message;
-          // The email of the user's account used.
           const email = error.customData.email;
-          // The AuthCredential type that was used.
           const credential = GoogleAuthProvider.credentialFromError(error);
           console.log(error);
-          // ...
         });
     });
+
+    // reCAPTCHA 설정
     window.recaptchaVerifier = new RecaptchaVerifier(
       "phoneNumberButton",
       {
         size: "invisible",
         callback: (response) => {
           // reCAPTCHA solved, allow signInWithPhoneNumber.
-          onSignInSubmit();
         },
+        'expired-callback': () => {
+          console.log('reCAPTCHA expired');
+        }
       },
       auth
     );
 
-    document
-      .getElementById("phoneNumberButton")
-      .addEventListener("click", (event) => {
-        event.preventDefault();
+    document.getElementById("phoneNumberButton").addEventListener("click", (event) => {
+      event.preventDefault();
 
-        const phoneNumber = document.getElementById("phoneNumber").value;
-        const appVerifier = window.recaptchaVerifier;
+      const phoneNumber = document.getElementById("phoneNumber").value;
+      const appVerifier = window.recaptchaVerifier;
 
-        signInWithPhoneNumber(auth, "+82" + phoneNumber, appVerifier)
-          .then((confirmationResult) => {
-            // SMS sent. Prompt user to type the code from the message, then sign the
-            // user in with confirmationResult.confirm(code).
-            window.confirmationResult = confirmationResult;
-            console.log(confirmationResult);
-            // ...
-          })
-          .catch((error) => {
-            console.log(error);
-            // Error; SMS not sent
-            // ...
-          });
-      });
+      signInWithPhoneNumber(auth, "+82" + phoneNumber, appVerifier)
+        .then((confirmationResult) => {
+          window.confirmationResult = confirmationResult;
+          console.log(confirmationResult);
+          alert('인증 코드가 발송되었습니다.');
+        })
+        .catch((error) => {
+          console.log(error);
+          alert('인증 코드 발송 실패: ' + error.message);
+        });
+    });
 
-    document
-      .getElementById("confrimCodeButton")
-      .addEventListener("click", (event) => {
-        event.preventDefault();
-        const code = document.getElementById("confirmCode").value;
-        confirmationResult
-          .confirm(code)
-          .then((result) => {
-            // User signed in successfully.
-            const user = result.user;
-            console.log(result);
-            // ...
-          })
-          .catch((error) => {
-            console.log(error);
-            // User couldn't sign in (bad verification code?)
-            // ...
-          });
-      });
+    document.getElementById("confirmCodeButton").addEventListener("click", (event) => {
+      event.preventDefault();
+      const code = document.getElementById("confirmCode").value;
+
+      window.confirmationResult.confirm(code)
+        .then((result) => {
+          const user = result.user;
+          console.log(result);
+          alert('인증 완료: ' + user.phoneNumber);
+        })
+        .catch((error) => {
+          console.log(error);
+          alert('인증 코드가 잘못되었습니다: ' + error.message);
+        });
+    });
   </script>
 </body>
 
