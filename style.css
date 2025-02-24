@@ -1,0 +1,28 @@
+
+html {
+  height: 100%;
+  width: 100%;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.kakao-button {
+  background-color: #FEE500;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  color: #000000;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.kakao-button:hover {
+  background-color: #E6CF00;
+}
