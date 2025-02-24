@@ -4,7 +4,6 @@ document.getElementById('sendKakao').addEventListener('click', async () => {
     const 고객명 = '한수지';
     const 계약서사본 = 'oelleno.github.io/ok/';
 
-
     const response = await fetch('https://kakaoapi.aligo.in/akv10/alimtalk/send/', {
       method: 'POST',
       headers: {
@@ -18,23 +17,28 @@ document.getElementById('sendKakao').addEventListener('click', async () => {
         'sender': '01092792273',
         'receiver_1': '01086871992',
         'subject_1': '계약서',
-        'message_1': `[${회사명}]\n안녕하세요. ${고객명}님!\n${회사명}에 등록해주셔서 진심으로 감사드립니다!`                'button_1': {
-          'buttons': JSON.stringify([
+        'message_1': `[${회사명}]\n안녕하세요. ${고객명}님!\n${회사명}에 등록해주셔서 진심으로 감사드립니다!`,
+
+        // JSON 형태의 문자열을 올바르게 이스케이프 처리
+        'button_1': `{
+          \"button\": [
             {
-              "name": "채널 추가",
-              "linkType": "AC",
-              "linkTypeName": "채널 추가"
+              \"name\": \"채널추가\",
+              \"linkType\": \"AC\",
+              \"linkTypeName\": \"채널 추가\"
             },
             {
-              "name": "계약서바로가기",
-              "linkType": "WL",
-              "linkTypeName": "웹링크",
-              "linkPc": "https://${계약서사본}",
-              "linkMo": "https://${계약서사본}"
+              \"name\": \"계약서 바로가기\",
+              \"linkType\": \"WL\",
+              \"linkTypeName\": \"웹링크\",
+              \"linkPc\": \"https://${계약서사본}\",
+              \"linkMo\": \"https://${계약서사본}\"
             }
-          ]),
-          'failover': 'N'
-        })
+          ]
+        }`,
+
+        'failover': 'N'
+      })
     });
 
     const data = await response.json();
@@ -45,7 +49,3 @@ document.getElementById('sendKakao').addEventListener('click', async () => {
     alert('전송 중 오류가 발생했습니다.');
   }
 });
-
-module.exports = {
-  alimtalkSend
-}
